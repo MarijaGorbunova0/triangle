@@ -4,12 +4,21 @@ namespace triangle
 {
     public class Triangle1
     {
-        public double a, b, c;
+        public double a, b, c, h;
+        public string type;
+
         public Triangle1(double a, double b, double c)
         {
             this.a = a;
             this.b = b;
             this.c = c;
+            TriangleType();
+
+        }
+        public Triangle1(int h, int a)
+        {
+            this.h = h;
+            this.a = a;
         }
         public string outputA()
         {
@@ -33,8 +42,19 @@ namespace triangle
 
         public double Surface()
         {
-            double p = (a + b + c) / 2; 
-            return Math.Sqrt(p * (p - a) * (p - b) * (p - c));
+            if (h > 0 && b == 0 && c == 0)
+            {
+                return 0.5 * a * h;
+            }
+            else if (a > 0 && b > 0 && c > 0)
+            {
+                double p = (a + b + c) / 2; 
+                return Math.Sqrt(p * (p - a) * (p - b) * (p - c));
+            }
+            else
+            {
+                throw new InvalidOperationException("vähe anbmed");
+            }
         }
 
         public double GetSetA
@@ -69,5 +89,22 @@ namespace triangle
                 }
             }
         }
+
+        private void TriangleType()
+        {
+            if (a == b && b == c)
+            {
+                type = "Võrdkülgne";
+            }
+            else if (a == b || a == c || b == c)
+            {
+                type = "Võrdhaarsed";
+            }
+            else
+            {
+                type = "Skaleen";
+            }
+        }
+
     }
 }
