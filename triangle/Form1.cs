@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 
 namespace triangle
 {
@@ -18,7 +19,8 @@ namespace triangle
         ListView listView1;
         RadioButton rbtn_allSides, rbtn_Height_A;
         Label lblA, lblB, lblC, lblH;
-        public Form1(){
+        public Form1()
+        {
 
             Text = "töö kolmnurgaga";
             //Icon = new Icon("Triangle.ico");
@@ -30,7 +32,7 @@ namespace triangle
             btn_start.Width = 100;
             btn_start.Height = 70;
             btn_start.BackColor = Color.White;
-           // btn_start.Font = new Font("Arial", 28);
+            // btn_start.Font = new Font("Arial", 28);
             btn_start.Cursor = Cursors.Hand;
             btn_start.FlatAppearance.BorderColor = Color.FromArgb(0, 192, 192);
             btn_start.FlatAppearance.BorderSize = 5;
@@ -39,11 +41,11 @@ namespace triangle
             btn_start.Location = new Point(400, 500);
             Controls.Add(btn_start);
 
-            txtA = new TextBox();         
-            txtA.Width = 100 ;
+            txtA = new TextBox();
+            txtA.Width = 100;
             txtA.Text = "0";
 
-            txtB = new TextBox();          
+            txtB = new TextBox();
             txtB.Width = 100;
             txtB.Text = "0";
 
@@ -96,7 +98,7 @@ namespace triangle
             Label label = new Label();
             label.Text = text;
             label.Location = new Point(x, y);
-            label.AutoSize = true; 
+            label.AutoSize = true;
             return label;
         }
         private void Run_button_Click(object sender, EventArgs e)
@@ -111,28 +113,28 @@ namespace triangle
                 Triangle1 triangle = new Triangle1(a, b, c, h);
 
                 listView1.Items.Clear();
-                listView1.Items.Add("Сторона A");
-                listView1.Items.Add("Сторона B");
-                listView1.Items.Add("Сторона C");
-                listView1.Items.Add("высота");
-                listView1.Items.Add("Периметр");
-                listView1.Items.Add("Площадь");
+                listView1.Items.Add("Külg A");
+                listView1.Items.Add("Pool B");
+                listView1.Items.Add("Külg C");
+                listView1.Items.Add("kõrgus");
+                listView1.Items.Add("Perimeter");
+                listView1.Items.Add("pindala");
+                listView1.Items.Add("Kolmnurk tüüpi");
 
 
-                
                 listView1.Items[0].SubItems.Add(triangle.outputA());
                 listView1.Items[1].SubItems.Add(triangle.outputB());
                 listView1.Items[2].SubItems.Add(triangle.outputC());
                 listView1.Items[3].SubItems.Add(triangle.outputH());
                 listView1.Items[4].SubItems.Add(Convert.ToString(triangle.Perimeter()));
                 listView1.Items[5].SubItems.Add(Convert.ToString(triangle.Surface()));
-       
+                listView1.Items[6].SubItems.Add(triangle.type);
 
-      
+
             }
             catch (FormatException)
             {
-                MessageBox.Show("Пожалуйста, введите корректные числовые значения для сторон.");
+                MessageBox.Show("vale andmed.");
             }
         }
         public void ShowTxt(object sender, EventArgs e)
@@ -173,6 +175,30 @@ namespace triangle
                 Controls.Remove(txtC);
                 Controls.Remove(lblC);
             }
+        }
+        private void SaveTriangleToFile(string filePath, double a, double b, double c, double h, string type)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            if (System.IO.File.Exists(filePath))
+            {
+                xmlDoc.Load(filePath); // Загружаем существующий XML файл
+            }
+            else
+            {
+                XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
+                xmlDoc.AppendChild(xmlDeclaration);
+
+                XmlElement root = xmlDoc.CreateElement("Triangles");
+                xmlDoc.AppendChild(root);
+            }
+            XmlElement triangleElement = xmlDoc.CreateElement("Triangle");
+
+        }
+        private void AddElement(XmlDocument doc, XmlElement parent, string elementName, string value)
+        {
+            XmlElement newElement = doc.CreateElement(elementName);
+            newElement.InnerText = value;
+            parent.AppendChild(newElement);
         }
     }
 }
