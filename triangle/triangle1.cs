@@ -7,11 +7,12 @@ namespace triangle
         public double a, b, c, h;
         public string type;
 
-        public Triangle1(double a, double b, double c)
+        public Triangle1(double a = 0, double b = 0, double c = 0, double h = 0)
         {
             this.a = a;
             this.b = b;
             this.c = c;
+            this.h = h;
             TriangleType();
 
         }
@@ -23,6 +24,10 @@ namespace triangle
         public string outputA()
         {
             return a.ToString();
+        }
+        public string outputH()
+        {
+            return h.ToString();
         }
 
         public string outputB()
