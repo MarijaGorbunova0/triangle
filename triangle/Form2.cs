@@ -12,16 +12,15 @@ using System.Xml;
 namespace triangle
 {
 
-    public partial class Form1 : Form
+    public partial class Form2 : Form
     {
-        Button btn_start, btn_Form;
+        Button btn_start;
         TextBox txtA, txtB, txtC, txtH;
         ListView listView1;
         RadioButton rbtn_allSides, rbtn_Height_A;
         Label lblA, lblB, lblC, lblH;
-
-
-        public Form1()
+        ComboBox shapeCB;
+        public Form2()
         {
 
             Text = "töö kolmnurgaga";
@@ -33,8 +32,7 @@ namespace triangle
             btn_start.Text = "kaivitada";
             btn_start.Width = 100;
             btn_start.Height = 70;
-            btn_start.BackColor = Color.White;
-            // btn_start.Font = new Font("Arial", 28);
+            btn_start.BackColor = Color.White; 
             btn_start.Cursor = Cursors.Hand;
             btn_start.FlatAppearance.BorderColor = Color.FromArgb(0, 192, 192);
             btn_start.FlatAppearance.BorderSize = 5;
@@ -43,20 +41,13 @@ namespace triangle
             btn_start.Location = new Point(400, 500);
             Controls.Add(btn_start);
 
-
-            btn_Form = new Button();
-            btn_Form.Text = "ava uus";
-            btn_Form.Width = 100;
-            btn_Form.Height = 70;
-            btn_Form.BackColor = Color.White;
-            // btn_start.Font = new Font("Arial", 28);
-            btn_Form.Cursor = Cursors.Hand;
-            btn_Form.FlatAppearance.BorderColor = Color.FromArgb(0, 192, 192);
-            btn_Form.FlatAppearance.BorderSize = 5;
-            btn_Form.FlatStyle = FlatStyle.Flat;
-            btn_Form.Click += ShowForm;
-            btn_Form.Location = new Point(520, 500);
-            Controls.Add(btn_Form);
+            shapeCB = new ComboBox();
+            shapeCB.Items.Add("Triangle");
+            shapeCB.Items.Add("Square");
+            shapeCB.SelectedIndex = 0; 
+            shapeCB.Location = new Point(50, 50);
+            shapeCB.SelectedIndexChanged += Change_Shape;
+            Controls.Add(shapeCB);
 
             txtA = new TextBox();
             txtA.Width = 100;
@@ -118,45 +109,6 @@ namespace triangle
             label.AutoSize = true;
             return label;
         }
-        private void Run_button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                double a = Convert.ToDouble(txtA.Text);
-                double b = Convert.ToDouble(txtB.Text);
-                double c = Convert.ToDouble(txtC.Text);
-                double h = Convert.ToDouble(txtH.Text);
-
-                Triangle1 triangle = new Triangle1(a, b, c, h);
-
-                listView1.Items.Clear();
-                listView1.Items.Add("Külg A");
-                listView1.Items.Add("Pool B");
-                listView1.Items.Add("Külg C");
-                listView1.Items.Add("kõrgus");
-                listView1.Items.Add("Perimeter");
-                listView1.Items.Add("pindala");
-                listView1.Items.Add("Kolmnurk tüüpi");
-
-
-                listView1.Items[0].SubItems.Add(triangle.outputA());
-                listView1.Items[1].SubItems.Add(triangle.outputB());
-                listView1.Items[2].SubItems.Add(triangle.outputC());
-                listView1.Items[3].SubItems.Add(triangle.outputH());
-                listView1.Items[4].SubItems.Add(Convert.ToString(triangle.Perimeter()));
-                listView1.Items[5].SubItems.Add(Convert.ToString(triangle.Surface()));
-                listView1.Items[6].SubItems.Add(triangle.type);
-                string filePath = @"C:\Users\Мария\Documents\XMLFile1.xml";
-
-                // Сохраняем данные в XML-файл
-                SaveTriangleToFile(filePath, a, b, c, h, triangle.type);
-
-            }
-            catch (FormatException)
-            {
-                MessageBox.Show("vale andmed.");
-            }
-        }
         public void ShowTxt(object sender, EventArgs e)
         {
             if (rbtn_allSides.Checked)
@@ -196,60 +148,107 @@ namespace triangle
                 Controls.Remove(lblC);
             }
         }
-        private void SaveTriangleToFile(string filePath, double a, double b, double c, double h, string type)
+        private void Run_button_Click(object sender, EventArgs e)
         {
             try
             {
-                XmlDocument xmlDoc = new XmlDocument();
-
-                // Проверяем, существует ли файл. Если нет, создаем его с корневым элементом <Triangles>
-                if (System.IO.File.Exists(filePath))
+                if (shapeCB.SelectedItem.ToString() == "Triangle")
                 {
-                    xmlDoc.Load(filePath); // Загружаем существующий XML файл
+                    double a = Convert.ToDouble(txtA.Text);
+                    double b = Convert.ToDouble(txtB.Text);
+                    double c = Convert.ToDouble(txtC.Text);
+                    double h = Convert.ToDouble(txtH.Text);
+
+                    Triangle1 triangle = new Triangle1(a, b, c, h);
+
+                    listView1.Items.Clear();
+                    listView1.Items.Add("Külg A");
+                    listView1.Items.Add("Pool B");
+                    listView1.Items.Add("Külg C");
+                    listView1.Items.Add("kõrgus");
+                    listView1.Items.Add("Perimeter");
+                    listView1.Items.Add("pindala");
+                    listView1.Items.Add("Kolmnurk tüüpi");
+
+                    listView1.Items[0].SubItems.Add(triangle.outputA());
+                    listView1.Items[1].SubItems.Add(triangle.outputB());
+                    listView1.Items[2].SubItems.Add(triangle.outputC());
+                    listView1.Items[3].SubItems.Add(triangle.outputH());
+                    listView1.Items[4].SubItems.Add(Convert.ToString(triangle.Perimeter()));
+                    listView1.Items[5].SubItems.Add(Convert.ToString(triangle.Surface()));
+                    listView1.Items[6].SubItems.Add(triangle.type);
                 }
-                else
+                else if (shapeCB.SelectedItem.ToString() == "Square")
                 {
-                    XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
-                    xmlDoc.AppendChild(xmlDeclaration);
+                
+                    double a = Convert.ToDouble(txtA.Text);
+                    Square square = new Square(a);
 
-                    // Создаем корневой элемент <Triangles>
-                    XmlElement root = xmlDoc.CreateElement("Triangles");
-                    xmlDoc.AppendChild(root);
+                    listView1.Items.Clear();
+                    listView1.Items.Add("Külg A");
+                    listView1.Items.Add("Perimeter");
+                    listView1.Items.Add("pindala");
+
+                    listView1.Items[0].SubItems.Add(square.outputA());
+                    listView1.Items[1].SubItems.Add(Convert.ToString(square.Perimeter()));
+                    listView1.Items[2].SubItems.Add(Convert.ToString(square.Surface()));
                 }
-
-                // Создаем новый элемент для треугольника
-                XmlElement triangleElement = xmlDoc.CreateElement("Triangle");
-
-                // Добавляем элементы для сторон и высоты
-                AddElement(xmlDoc, triangleElement, "SideA", a.ToString());
-                AddElement(xmlDoc, triangleElement, "SideB", b.ToString());
-                AddElement(xmlDoc, triangleElement, "SideC", c.ToString());
-                AddElement(xmlDoc, triangleElement, "Height", h.ToString());
-                AddElement(xmlDoc, triangleElement, "Type", type);
-
-                // Добавляем элемент <Triangle> в корневой элемент <Triangles>
-                xmlDoc.DocumentElement.AppendChild(triangleElement);
-
-                // Сохраняем изменения в файл
-                xmlDoc.Save(filePath);
-
-                MessageBox.Show("Данные успешно сохранены!");
             }
-            catch (Exception ex)
+            catch (FormatException)
             {
-                MessageBox.Show("Ошибка при сохранении данных: " + ex.Message);
+                MessageBox.Show("vale andmed.");
             }
+        }
+        private void Change_Shape(object sender, EventArgs e)
+        {
+            if (shapeCB.SelectedItem.ToString() == "Triangle")
+            {
+                rbtn_allSides.Visible = true;
+                rbtn_Height_A.Visible = true;
+                ShowTxt(sender, e); 
+            }
+            else if (shapeCB.SelectedItem.ToString() == "Square")
+            {
+                rbtn_allSides.Visible = false;
+                rbtn_Height_A.Visible = false;
+
+                lblA.Location = new Point(400, 380);
+                txtA.Location = new Point(350, 400);
+                Controls.Add(lblA);
+                Controls.Add(txtA);
+
+
+                Controls.Remove(lblB);
+                Controls.Remove(txtB);
+                Controls.Remove(lblC);
+                Controls.Remove(txtC);
+                Controls.Remove(lblH);
+                Controls.Remove(txtH);
+            }
+        }
+        private void SaveTriangleToFile(string filePath, double a, double b, double c, double h, string type)
+        {
+            XmlDocument xmlDoc = new XmlDocument();
+            if (System.IO.File.Exists(filePath))
+            {
+                xmlDoc.Load(filePath); // Загружаем существующий XML файл
+            }
+            else
+            {
+                XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
+                xmlDoc.AppendChild(xmlDeclaration);
+
+                XmlElement root = xmlDoc.CreateElement("Triangles");
+                xmlDoc.AppendChild(root);
+            }
+            XmlElement triangleElement = xmlDoc.CreateElement("Triangle");
+
         }
         private void AddElement(XmlDocument doc, XmlElement parent, string elementName, string value)
         {
             XmlElement newElement = doc.CreateElement(elementName);
             newElement.InnerText = value;
             parent.AppendChild(newElement);
-        }
-        public void ShowForm(object sender, EventArgs e)
-        {
-            Form2 form2 = new Form2();
-            form2.Show();
         }
     }
 }
