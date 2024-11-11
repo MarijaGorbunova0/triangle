@@ -20,10 +20,7 @@ namespace triangle
         RadioButton rbtn_allSides, rbtn_Height_A;
         Label lblA, lblB, lblC, lblH;
         ComboBox shapeCB;
-        CheckBox chkDraw;
-        Panel drPanel;
-        private double triangleBase;
-        private double triangleHeight;
+        DataGridView dataGridView;
         public Form2()
         {
 
@@ -83,17 +80,24 @@ namespace triangle
             Controls.Add(rbtn_allSides);
             Controls.Add(rbtn_Height_A);
 
-            chkDraw = new CheckBox();
-            chkDraw.Text = "Рисовать треугольник";
-            chkDraw.Location = new Point(400, 470);
-            Controls.Add(chkDraw);
+   
 
-            drPanel = new Panel();
-            drPanel.Location = new Point(650, 150);  // Устанавливаем позицию панели
-            drPanel.Size = new Size(800, 300);      // Устанавливаем размер панели
-            drPanel.BackColor = Color.White;        // Устанавливаем цвет фона панели
-            drPanel.Paint += DrawPanel_Paint;       // Привязываем обработчик события Paint
-            Controls.Add(drPanel);
+            dataGridView = new DataGridView();
+            dataGridView.Location = new Point(750, 50);
+            dataGridView.Width = 360;
+            dataGridView.Height = 400;
+            Controls.Add(dataGridView);
+
+            Button btnLoadData = new Button();
+            btnLoadData.Text = "näita";
+            btnLoadData.Location = new Point(50, 200);
+            btnLoadData.Click += (sender, e) =>
+            {
+                string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XMLFile1.xml");
+
+                LoadData(filePath);
+            };
+            Controls.Add(btnLoadData);
             listView1 = new ListView
             {
                 Location = new Point(210, 50),
@@ -101,8 +105,8 @@ namespace triangle
                 Height = 300,
                 View = View.Details
             };
-            listView1.Columns.Add("Параметр", 200);
-            listView1.Columns.Add("Значение", 300);
+            listView1.Columns.Add("figuur", 200);
+            listView1.Columns.Add("tähenduses", 300);
             Controls.Add(listView1);
 
 
@@ -112,10 +116,7 @@ namespace triangle
             lblC = CreateLabel("C:", 525, 375);
             lblH = CreateLabel("H:", 650, 375);
 
-
-
         }
-
 
         private Label CreateLabel(string text, int x, int y)
         {
@@ -162,21 +163,14 @@ namespace triangle
                 Controls.Remove(txtB);
                 Controls.Remove(txtC);
                 Controls.Remove(lblC);
+
             }
         }
         private void Run_button_Click(object sender, EventArgs e)
         {
+            string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XMLFile1.xml");
             try
             {
-                double aD = Convert.ToDouble(txtA.Text);
-                double hD = Convert.ToDouble(txtH.Text);
-                triangleBase = aD;   // Сохраняем основание
-                triangleHeight = hD;
-
-                if (chkDraw.Checked)
-                {
-                    drPanel.Invalidate(); // Запускаем перерисовку панели
-                }
                 if (shapeCB.SelectedItem.ToString() == "Triangle")
                 {
                     double a = Convert.ToDouble(txtA.Text);
@@ -202,6 +196,19 @@ namespace triangle
                     listView1.Items[4].SubItems.Add(Convert.ToString(triangle.Perimeter()));
                     listView1.Items[5].SubItems.Add(Convert.ToString(triangle.Surface()));
                     listView1.Items[6].SubItems.Add(triangle.type);
+
+                    var triangleParams = new Dictionary<string, string>
+                    {
+                        { "SideA", a.ToString() },
+                        { "SideB", b.ToString() },
+                        { "SideC", c.ToString() },
+                        { "Height", h.ToString() },
+                        { "Type", triangle.type },
+                        { "Perimeter", triangle.Perimeter().ToString() },
+                        { "Area", triangle.Surface().ToString() }
+                    };
+
+                    SaveShapeToFile(filePath, "Triangle", triangleParams);
                 }
                 else if (shapeCB.SelectedItem.ToString() == "Square")
                 {
@@ -217,6 +224,13 @@ namespace triangle
                     listView1.Items[0].SubItems.Add(square.outputA());
                     listView1.Items[1].SubItems.Add(Convert.ToString(square.Perimeter()));
                     listView1.Items[2].SubItems.Add(Convert.ToString(square.Surface()));
+                    var squareParams = new Dictionary<string, string>
+                    {
+                        { "SideA", a.ToString() },
+                        { "Perimeter", square.Perimeter().ToString() },
+                        { "Area", square.Surface().ToString() }
+                    };
+                    SaveShapeToFile(filePath, "Square", squareParams);
                 }
             }
             catch (FormatException)
@@ -251,23 +265,43 @@ namespace triangle
                 Controls.Remove(txtH);
             }
         }
-        private void SaveTriangleToFile(string filePath, double a, double b, double c, double h, string type)
+        private void SaveShapeToFile(string filePath, string shapeType, Dictionary<string, string> parameters)
         {
-            XmlDocument xmlDoc = new XmlDocument();
-            if (System.IO.File.Exists(filePath))
+            try
             {
-                xmlDoc.Load(filePath); // Загружаем существующий XML файл
+                XmlDocument xmlDoc = new XmlDocument();
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    xmlDoc.Load(filePath); 
+                }
+                else
+                {
+                    XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
+                    xmlDoc.AppendChild(xmlDeclaration);
+
+                    XmlElement root = xmlDoc.CreateElement("Shapes");
+                    xmlDoc.AppendChild(root);
+                }
+
+                XmlElement shapeElement = xmlDoc.CreateElement(shapeType);
+
+                foreach (var param in parameters)
+                {
+                    AddElement(xmlDoc, shapeElement, param.Key, param.Value);
+                }
+
+               
+                xmlDoc.DocumentElement.AppendChild(shapeElement);
+
+                xmlDoc.Save(filePath);
+
+                MessageBox.Show("kõik on hästi!");
             }
-            else
+            catch (Exception ex)
             {
-                XmlDeclaration xmlDeclaration = xmlDoc.CreateXmlDeclaration("1.0", "UTF-8", null);
-                xmlDoc.AppendChild(xmlDeclaration);
-
-                XmlElement root = xmlDoc.CreateElement("Triangles");
-                xmlDoc.AppendChild(root);
+                MessageBox.Show(" vale andmed " + ex.Message);
             }
-            XmlElement triangleElement = xmlDoc.CreateElement("Triangle");
-
         }
         private void AddElement(XmlDocument doc, XmlElement parent, string elementName, string value)
         {
@@ -275,24 +309,44 @@ namespace triangle
             newElement.InnerText = value;
             parent.AppendChild(newElement);
         }
-        private void DrawPanel_Paint(object sender, PaintEventArgs e)
+        private void LoadData(string filePath)
         {
-            // Получаем объект Graphics из PaintEventArgs
-            Graphics g = e.Graphics;
+            try
+            {
+                XmlDocument xmlDoc = new XmlDocument();
 
-            // Рассчитываем положение и размеры треугольника
-            float rightX = drPanel.ClientSize.Width * 0.75f;  // Перемещаем на 75% ширины панели
-            float startY = 50; // Начальная позиция по оси Y для треугольника
+                if (System.IO.File.Exists(filePath))
+                {
+                    xmlDoc.Load(filePath);
+                }
+                else
+                {
+                    MessageBox.Show("fail ei leidnud!");
+                    return;
+                }
 
-            // Определяем координаты вершин треугольника
-            PointF point1 = new PointF(rightX, startY); // Верхняя вершина
-            PointF point2 = new PointF((float)(rightX - triangleBase / 2), (float)(startY + triangleHeight)); // Нижняя левая вершина
-            PointF point3 = new PointF((float)(rightX + triangleBase / 2), (float)(startY + triangleHeight)); // Нижняя правая вершина
+                DataTable dt = new DataTable();
 
-            // Рисуем треугольник
-            PointF[] points = { point1, point2, point3 };
-            g.FillPolygon(Brushes.LightBlue, points); // Заливка треугольника
-            g.DrawPolygon(Pens.Black, points); // Контур треугольника
+                dt.Columns.Add("figur");
+                dt.Columns.Add("Parameeter");
+                dt.Columns.Add("Tähendus");
+
+                foreach (XmlElement shapeElement in xmlDoc.DocumentElement.ChildNodes)
+                {
+                    string shapeType = shapeElement.Name; 
+
+                    foreach (XmlElement param in shapeElement.ChildNodes)
+                    {
+                        dt.Rows.Add(shapeType, param.Name, param.InnerText);
+                    }
+                }
+                dataGridView.DataSource = dt;
+                dataGridView.AllowUserToAddRows = false;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("viga " + ex.Message);
+            }
         }
     }
 }
