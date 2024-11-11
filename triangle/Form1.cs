@@ -146,7 +146,7 @@ namespace triangle
                 listView1.Items[4].SubItems.Add(Convert.ToString(triangle.Perimeter()));
                 listView1.Items[5].SubItems.Add(Convert.ToString(triangle.Surface()));
                 listView1.Items[6].SubItems.Add(triangle.type);
-                string filePath = @"C:\Users\Мария\Documents\XMLFile1.xml";
+                string filePath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "XMLFile1.xml");
 
                 // Сохраняем данные в XML-файл
                 SaveTriangleToFile(filePath, a, b, c, h, triangle.type);

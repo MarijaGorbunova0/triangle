@@ -20,6 +20,10 @@ namespace triangle
         RadioButton rbtn_allSides, rbtn_Height_A;
         Label lblA, lblB, lblC, lblH;
         ComboBox shapeCB;
+        CheckBox chkDraw;
+        Panel drPanel;
+        private double triangleBase;
+        private double triangleHeight;
         public Form2()
         {
 
@@ -78,6 +82,18 @@ namespace triangle
 
             Controls.Add(rbtn_allSides);
             Controls.Add(rbtn_Height_A);
+
+            chkDraw = new CheckBox();
+            chkDraw.Text = "Рисовать треугольник";
+            chkDraw.Location = new Point(400, 470);
+            Controls.Add(chkDraw);
+
+            drPanel = new Panel();
+            drPanel.Location = new Point(650, 150);  // Устанавливаем позицию панели
+            drPanel.Size = new Size(800, 300);      // Устанавливаем размер панели
+            drPanel.BackColor = Color.White;        // Устанавливаем цвет фона панели
+            drPanel.Paint += DrawPanel_Paint;       // Привязываем обработчик события Paint
+            Controls.Add(drPanel);
             listView1 = new ListView
             {
                 Location = new Point(210, 50),
@@ -152,6 +168,15 @@ namespace triangle
         {
             try
             {
+                double aD = Convert.ToDouble(txtA.Text);
+                double hD = Convert.ToDouble(txtH.Text);
+                triangleBase = aD;   // Сохраняем основание
+                triangleHeight = hD;
+
+                if (chkDraw.Checked)
+                {
+                    drPanel.Invalidate(); // Запускаем перерисовку панели
+                }
                 if (shapeCB.SelectedItem.ToString() == "Triangle")
                 {
                     double a = Convert.ToDouble(txtA.Text);
@@ -249,6 +274,25 @@ namespace triangle
             XmlElement newElement = doc.CreateElement(elementName);
             newElement.InnerText = value;
             parent.AppendChild(newElement);
+        }
+        private void DrawPanel_Paint(object sender, PaintEventArgs e)
+        {
+            // Получаем объект Graphics из PaintEventArgs
+            Graphics g = e.Graphics;
+
+            // Рассчитываем положение и размеры треугольника
+            float rightX = drPanel.ClientSize.Width * 0.75f;  // Перемещаем на 75% ширины панели
+            float startY = 50; // Начальная позиция по оси Y для треугольника
+
+            // Определяем координаты вершин треугольника
+            PointF point1 = new PointF(rightX, startY); // Верхняя вершина
+            PointF point2 = new PointF((float)(rightX - triangleBase / 2), (float)(startY + triangleHeight)); // Нижняя левая вершина
+            PointF point3 = new PointF((float)(rightX + triangleBase / 2), (float)(startY + triangleHeight)); // Нижняя правая вершина
+
+            // Рисуем треугольник
+            PointF[] points = { point1, point2, point3 };
+            g.FillPolygon(Brushes.LightBlue, points); // Заливка треугольника
+            g.DrawPolygon(Pens.Black, points); // Контур треугольника
         }
     }
 }
